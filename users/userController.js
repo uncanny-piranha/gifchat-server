@@ -4,11 +4,11 @@ var jwt  = require('jwt-simple');
 
 module.exports = {
   login: function (req, res, next) {
-    var email = req.body.email;
+    var username = req.body.username;
     var password = req.body.password;
 
     var findUser = Q.nbind(User.findOne, User);
-    findUser({email: email})
+    findUser({username: username})
       .then(function (user) {
         if (!user) {
           next(new Error('User does not exist'));
@@ -31,13 +31,12 @@ module.exports = {
 
   signup: function (req, res, next) {
     var username = req.body.username;
-    var email  = req.body.email;
     var password  = req.body.password;
     var create, newUser;
 
     // check to see if user already exists
     var findOne = Q.nbind(User.findOne, User);
-    findOne({email: email})
+    findOne({username: username})
       .then(function(user) {
         if (user) {
           next(new Error('User already exist!'));
@@ -46,9 +45,7 @@ module.exports = {
           create = Q.nbind(User.create, User);
           newUser = {
             username: username,
-            email: email,
-            password: password,
-            role: 'user'
+            password: password
           };
           return create(newUser);
         }
