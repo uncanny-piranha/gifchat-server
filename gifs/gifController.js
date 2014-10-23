@@ -1,22 +1,35 @@
 var Gif = require('./gifModel.js');
 var Q = require('q');
 var request = require('request');
+var Firebase = require('firebase');
 
 module.exports = {
   retrieveGif: function(req, res, next){
-    var keyword = req.body.keyword;
+    var fromUser = req.body.from;
+    var toUser = req.body.to;
+    //converts spaces to + in keyword
+    var keyword = req.body.keyword.split(' ').join('+');
+
+    //open up firebase connections
+    var fromUserRef = new Firebase('https://sizzling-fire-1984.firebaseio.com/usernames/'+fromUser+'/messages/'+toUser);
+    var toUserRef = new Firebase('https://sizzling-fire-1984.firebaseio.com/usernames/'+toUser+'/messages/'+fromUser);
+
     //check database for keyword
     var findKey = Q.nbind(Gif.findOne, Gif);
     findKey({keyword: keyword})
       .then(function (gif) {
-        //if found, send back random url from array
+        //if found, send back random url from array to firebase
         if (gif) {
           if (gif.urls.length > 0) {
             var randIndex = Math.floor(Math.random()*gif.urls.length);
-            res.json({url: gif.urls[randIndex]});
+            fromUserRef.push({'username': fromUser, 'text': gif.urls[randIndex]});
+            toUserRef.push({'username': fromUser, 'text': gif.urls[randIndex]});
+            res.send(200);
           } else {
             //SENDS BACK SAME GIF EACH TIME NONE IS FOUND. MIGHT WANT TO RANDOMIZE THIS
-            res.json({url: 'http://i.imgur.com/PVSpM9X.gif'});
+            fromUserRef.push({'username': fromUser, 'text': 'http://i.imgur.com/PVSpM9X.gif'});
+            toUserRef.push({'username': fromUser, 'text': 'http://i.imgur.com/PVSpM9X.gif'});
+            res.send(200);
           }
         } else {
         //else, hit giffy api
@@ -24,13 +37,17 @@ module.exports = {
             if (err) {
               return console.log('Error fetching data from giphy: ' + err);
             }
-            //if results sent back, send back random url from results
+            //if results sent back, send back random url from results to firebase
             if (body.data.length > 0) {
               var randIndex = Math.floor(Math.random()*body.data.length);
-              res.json({url: body.data[randIndex].images.original.url});
+              fromUserRef.push({'username': fromUser, 'text': body.data[randIndex].images.original.url});
+              toUserRef.push({'username': fromUser, 'text': body.data[randIndex].images.original.url});
+              res.send(200);
             } else {
               //SENDS BACK SAME GIF EACH TIME NONE IS FOUND. MIGHT WANT TO RANDOMIZE THIS
-              res.json({url: 'http://i.imgur.com/PVSpM9X.gif'});
+              fromUserRef.push({'username': fromUser, 'text': 'http://i.imgur.com/PVSpM9X.gif'});
+              toUserRef.push({'username': fromUser, 'text': 'http://i.imgur.com/PVSpM9X.gif'});
+              res.send(200);
             }
             //Store results in mongo
             var gifArray = [];
