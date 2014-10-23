@@ -8,16 +8,10 @@ var UserSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  email: {
-    type: String,
-    requred: true,
-    unique: true
-  },
   password: {
     type: String,
     required: true
-  },
-  role: String
+  }
 });
 
 UserSchema.methods.comparePasswords = function (candidatePassword) {
