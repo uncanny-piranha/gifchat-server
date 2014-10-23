@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-var debug = require('debug')('expressapp');
+var mongoose = require('mongoose');
 var app = require('../app');
 
-app.set('port', process.env.PORT || 3000);
+var port = process.env.PORT || 3000;
+var mongo_uri = process.env.MONGOLAB_URI || 'mongodb://localhost/gifchat';
 
-var server = app.listen(app.get('port'), function() {
-  debug('Express server listening on port ' + server.address().port);
+mongoose.connect(mongo_uri, {db: {safe: true}});
+
+var server = app.listen(port, function() {
+  console.log('Express server listening on port ' + port);
 });
