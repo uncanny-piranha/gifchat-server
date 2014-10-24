@@ -5,7 +5,7 @@ var livereload = require('gulp-livereload');
 gulp.task('develop', function () {
   livereload.listen();
   nodemon({
-    script: 'bin/www',
+    script: 'server',
     ext: 'js ejs',
   }).on('restart', function () {
     setTimeout(function () {

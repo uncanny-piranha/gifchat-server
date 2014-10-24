@@ -1,6 +1,5 @@
-#!/usr/bin/env node
 var mongoose = require('mongoose');
-var app = require('../app');
+var app = require('./app');
 
 var port = process.env.PORT || 3000;
 var mongo_uri = process.env.MONGOLAB_URI || 'mongodb://localhost/gifchat';
