@@ -9,10 +9,12 @@ module.exports = {
     var toUser = req.body.to;
     //converts spaces to + in keyword
     var keyword = req.body.keyword.split(' ').join('+');
+    //url for the firebase database
+    var firebaseUrl = 'https://sizzling-fire-1984.firebaseio.com';
 
     //open up firebase connections
-    var fromUserRef = new Firebase('https://sizzling-fire-1984.firebaseio.com/usernames/'+fromUser+'/messages/'+toUser);
-    var toUserRef = new Firebase('https://sizzling-fire-1984.firebaseio.com/usernames/'+toUser+'/messages/'+fromUser);
+    var fromUserRef = new Firebase(firebaseUrl+'/usernames/'+fromUser+'/messages/'+toUser);
+    var toUserRef = new Firebase(firebaseUrl+'/usernames/'+toUser+'/messages/'+fromUser);
 
     //check database for keyword
     var findKey = Q.nbind(Gif.findOne, Gif);
@@ -22,17 +24,13 @@ module.exports = {
         if (gif) {
           if (gif.urls.length > 0) {
             var randIndex = Math.floor(Math.random()*gif.urls.length);
-            fromUserRef.push({'username': fromUser, 'text': gif.urls[randIndex]});
-            toUserRef.push({'username': fromUser, 'text': gif.urls[randIndex]});
-            res.send(200);
+            pushToFirebase(fromUser, gif.urls[randIndex]);
           } else {
             //SENDS BACK SAME GIF EACH TIME NONE IS FOUND. MIGHT WANT TO RANDOMIZE THIS
-            fromUserRef.push({'username': fromUser, 'text': 'http://i.imgur.com/PVSpM9X.gif'});
-            toUserRef.push({'username': fromUser, 'text': 'http://i.imgur.com/PVSpM9X.gif'});
-            res.send(200);
+            pushToFirebase(fromUser, 'http://i.imgur.com/PVSpM9X.gif');
           }
         } else {
-        //else, hit giffy api
+        //else, hit giffy api. search for keyword, use public api key, and ask for first 100 results
           request.get({url: 'http://api.giphy.com/v1/gifs/search?q='+keyword+'&api_key=dc6zaTOxFJmzC&limit=100', json: true}, function (err, httpRes, body) {
             if (err) {
               return console.log('Error fetching data from giphy: ' + err);
@@ -40,14 +38,10 @@ module.exports = {
             //if results sent back, send back random url from results to firebase
             if (body.data.length > 0) {
               var randIndex = Math.floor(Math.random()*body.data.length);
-              fromUserRef.push({'username': fromUser, 'text': body.data[randIndex].images.original.url});
-              toUserRef.push({'username': fromUser, 'text': body.data[randIndex].images.original.url});
-              res.send(200);
+              pushToFirebase(fromUser, body.data[randIndex].images.original.url);
             } else {
               //SENDS BACK SAME GIF EACH TIME NONE IS FOUND. MIGHT WANT TO RANDOMIZE THIS
-              fromUserRef.push({'username': fromUser, 'text': 'http://i.imgur.com/PVSpM9X.gif'});
-              toUserRef.push({'username': fromUser, 'text': 'http://i.imgur.com/PVSpM9X.gif'});
-              res.send(200);
+              pushToFirebase(fromUser, 'http://i.imgur.com/PVSpM9X.gif');
             }
             //Store results in mongo
             var gifArray = [];
@@ -66,5 +60,12 @@ module.exports = {
       .fail(function (error) {
         next(error);
       });
+
+    //helper function to push the gif url to the message boards for both users
+    var pushToFirebase = function (username, text) {
+      fromUserRef.push({'username': username, 'text': text});
+      toUserRef.push({'username': username, 'text': text});
+      res.send(200);
+    }
   }
 };
