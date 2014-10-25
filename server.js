@@ -1,3 +1,4 @@
+//Main server file
 var mongoose = require('mongoose');
 var app = require('./app');
 

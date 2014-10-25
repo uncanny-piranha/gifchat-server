@@ -24,7 +24,7 @@ module.exports = {
         if (gif) {
           if (gif.urls.length > 0) {
             var randIndex = Math.floor(Math.random()*gif.urls.length);
-            pushToFirebase(fromUser, gif.url[randIndex]);
+            pushToFirebase(fromUser, gif.urls[randIndex]);
           } else {
             //SENDS BACK SAME GIF EACH TIME NONE IS FOUND. MIGHT WANT TO RANDOMIZE THIS
             pushToFirebase(fromUser, 'http://i.imgur.com/PVSpM9X.gif');
