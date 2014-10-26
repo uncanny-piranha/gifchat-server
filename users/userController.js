@@ -3,6 +3,7 @@ var Q    = require('q');
 var jwt  = require('jwt-simple');
 
 module.exports = {
+  //check database for username. if found, check if password matches. return a token and the username
   login: function (req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
@@ -11,15 +12,15 @@ module.exports = {
     findUser({username: username})
       .then(function (user) {
         if (!user) {
-          next(new Error('User does not exist'));
+          next({status: 404, message: 'Incorrect username'});
         } else {
           return user.comparePasswords(password)
-            .then(function(foundUser) {
+            .then(function (foundUser) {
               if (foundUser) {
                 var token = jwt.encode(user, 'secret');
-                res.json({token: token, username: user.username});
+                res.json({token: token, username: username});
               } else {
-                return next(new Error('No user'));
+                return next({status: 401, message: 'Incorrect password'});
               }
             });
         }
@@ -29,6 +30,7 @@ module.exports = {
       });
   },
 
+  //check database for username. if none exists, create a new user with the given password
   signup: function (req, res, next) {
     var username = req.body.username;
     var password  = req.body.password;
@@ -39,7 +41,7 @@ module.exports = {
     findOne({username: username})
       .then(function(user) {
         if (user) {
-          next(new Error('User already exist!'));
+          next({status: 409, message: 'User already exists!'});
         } else {
           // make a new user if not one
           create = Q.nbind(User.create, User);
@@ -67,7 +69,7 @@ module.exports = {
     // check to see if that user exists in the database
     var token = req.headers['x-access-token'];
     if (!token) {
-      next(new Error('No token'));
+      next({status: 404, message: 'No token'});
     } else {
       var user = jwt.decode(token, 'secret');
       var findUser = Q.nbind(User.findOne, User);
