@@ -10,7 +10,7 @@ module.exports = {
     //converts spaces to + in keyword
     var keyword = req.body.keyword.split(' ').join('+');
     //url for the firebase database
-    var firebaseUrl = 'https://sizzling-fire-1984.firebaseio.com';
+    var firebaseUrl = 'https://scalding-fire-2109.firebaseio.com';
 
     //open up firebase connections
     var fromUserRef = new Firebase(firebaseUrl+'/usernames/'+fromUser+'/messages/'+toUser+'/messages');
