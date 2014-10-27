@@ -13,8 +13,11 @@ module.exports = {
     var firebaseUrl = 'https://scalding-fire-2109.firebaseio.com';
 
     //open up firebase connections
-    var fromUserRef = new Firebase(firebaseUrl+'/usernames/'+fromUser+'/messages/'+toUser+'/messages');
-    var toUserRef = new Firebase(firebaseUrl+'/usernames/'+toUser+'/messages/'+fromUser+'/messages');
+    var fromUserRef = new Firebase(firebaseUrl+'/usernames/'+fromUser+'/messages/'+toUser);
+    var toUserRef = new Firebase(firebaseUrl+'/usernames/'+toUser+'/messages/'+fromUser);
+    var fromUserMsg = fromUserRef.child('messages');
+    var toUserMsg = toUserRef.child('messages');
+    var toUserUnread = toUserRef.child('unread');
 
     //check database for keyword
     var findKey = Q.nbind(Gif.findOne, Gif);
@@ -63,8 +66,9 @@ module.exports = {
 
     //helper function to push the gif url to the message boards for both users
     var pushToFirebase = function (username, text) {
-      fromUserRef.push({'username': username, 'text': text});
-      toUserRef.push({'username': username, 'text': text});
+      fromUserMsg.push({'username': username, 'text': text});
+      toUserMsg.push({'username': username, 'text': text});
+      toUserUnread.set(1);
       res.send(200);
     }
   }
