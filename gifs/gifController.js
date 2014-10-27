@@ -13,8 +13,8 @@ module.exports = {
     var firebaseUrl = 'https://sizzling-fire-1984.firebaseio.com';
 
     //open up firebase connections
-    var fromUserRef = new Firebase(firebaseUrl+'/usernames/'+fromUser+'/messages/'+toUser);
-    var toUserRef = new Firebase(firebaseUrl+'/usernames/'+toUser+'/messages/'+fromUser);
+    var fromUserRef = new Firebase(firebaseUrl+'/usernames/'+fromUser+'/messages/'+toUser+'/messages');
+    var toUserRef = new Firebase(firebaseUrl+'/usernames/'+toUser+'/messages/'+fromUser+'/messages');
 
     //check database for keyword
     var findKey = Q.nbind(Gif.findOne, Gif);
